@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F1C30;
+    --panel: #16283F;
+    --panel-alt: #1D3350;
+    --line: #2C4666;
+    --line-soft: #23395A;
+    --text: #EDEFF4;
+    --text-muted: #93A2BC;
+    --text-faint: #5E7091;
+    --c-developed: #6FA8DC;
+    --c-em: #D9A441;
+    --c-scv: #C96A4E;
+    --c-other: #5C6B84;
+    --good: #5CB88A;
+    --warn: #E0A458;
+    --act: #D9765A;
+    --focus: #8FBFEA;
+    --radius-s: 3px;
+    --radius-m: 6px;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #EEF1F6;
+      --panel: #FFFFFF;
+      --panel-alt: #F5F7FA;
+      --line: #D5DCE6;
+      --line-soft: #E3E8EF;
+      --text: #16283F;
+      --text-muted: #4B5A73;
+      --text-faint: #8595AD;
+      --c-developed: #3E7DBF;
+      --c-em: #B9832A;
+      --c-scv: #B2503A;
+      --c-other: #7A8AA3;
+      --good: #2E9563;
+      --warn: #C2811F;
+      --act: #C15A3E;
+      --focus: #2E6DA6;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #EEF1F6;
+    --panel: #FFFFFF;
+    --panel-alt: #F5F7FA;
+    --line: #D5DCE6;
+    --line-soft: #E3E8EF;
+    --text: #16283F;
+    --text-muted: #4B5A73;
+    --text-faint: #8595AD;
+    --c-developed: #3E7DBF;
+    --c-em: #B9832A;
+    --c-scv: #B2503A;
+    --c-other: #7A8AA3;
+    --good: #2E9563;
+    --warn: #C2811F;
+    --act: #C15A3E;
+    --focus: #2E6DA6;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding: 28px 20px 80px;
+  }
+  a { color: var(--focus); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding-bottom: 18px;
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 30px;
+    margin: 0 0 4px;
+    letter-spacing: 0.2px;
+  }
+  .masthead .sub {
+    color: var(--text-muted);
+    font-size: 13.5px;
+  }
+  .masthead .totals { text-align: right; }
+  .masthead .totals .figure {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-variant-numeric: tabular-nums;
+  }
+  .masthead .totals .label {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .theme-toggle {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--text-muted);
+    border-radius: var(--radius-s);
+    padding: 5px 9px;
+    font-size: 12px;
+    font-family: var(--sans);
+    cursor: pointer;
+  }
+  .theme-toggle:hover { color: var(--text); border-color: var(--text-faint); }
+
+  /* ---------- Tabs ---------- */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 10px;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-family: var(--sans);
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 9px 4px;
+    margin-right: 18px;
+    cursor: pointer;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--text); border-bottom-color: var(--act); }
+  .portfolio-desc {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0 0 22px;
+  }
+
+  /* ---------- Layout ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: 1.65fr 1fr;
+    gap: 22px;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 20px 22px;
+    margin-bottom: 20px;
+  }
+  .panel h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 17px;
+    margin: 0 0 4px;
+  }
+  .panel .panel-note {
+    color: var(--text-muted);
+    font-size: 12.5px;
+    margin: 0 0 16px;
+  }
+
+  /* ---------- Recommendation ---------- */
+  .rec {
+    background: linear-gradient(180deg, var(--panel-alt), var(--panel));
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--act);
+    border-radius: var(--radius-m);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+  }
+  .rec .eyebrow {
+    color: var(--act);
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .rec .headline {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 500;
+    margin: 0 0 6px;
+  }
+  .rec .headline .amt { font-variant-numeric: tabular-nums; }
+  .rec .detail { color: var(--text-muted); font-size: 13px; }
+  .rec.balanced { border-left-color: var(--good); }
+  .rec.balanced .eyebrow { color: var(--good); }
+
+  /* ---------- Ribbons ---------- */
+  .ribbon-row { margin-bottom: 14px; }
+  .ribbon-row .rlabel {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+  .ribbon-track {
+    position: relative;
+    height: 40px;
+    border-radius: var(--radius-s);
+    overflow: hidden;
+    display: flex;
+    border: 1px solid var(--line-soft);
+  }
+  .ribbon-seg {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.95);
+    white-space: nowrap;
+    overflow: hidden;
+    transition: width 0.25s ease;
+  }
+  .ribbon-seg.developed { background: var(--c-developed); }
+  .ribbon-seg.em { background: var(--c-em); }
+  .ribbon-seg.scv { background: var(--c-scv); }
+  .ribbon-wrap { position: relative; padding-top: 4px; }
+  .target-guides { position: absolute; inset: 0; pointer-events: none; }
+  .target-guides .guide {
+    position: absolute;
+    top: 0; bottom: 0;
+    border-left: 1px dashed var(--text-faint);
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 14px;
+    font-size: 12.5px;
+  }
+  .legend .item { display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
+  .legend .dot { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  .legend .dot.developed { background: var(--c-developed); }
+  .legend .dot.em { background: var(--c-em); }
+  .legend .dot.scv { background: var(--c-scv); }
+  .legend b { color: var(--text); font-weight: 500; font-family: var(--mono); }
+
+  /* ---------- Delta chips ---------- */
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .chip {
+    flex: 1 1 140px;
+    background: var(--panel-alt);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-s);
+    padding: 10px 12px;
+  }
+  .chip .name { font-size: 11.5px; color: var(--text-muted); display:flex; align-items:center; gap:6px; margin-bottom: 4px;}
+  .chip .val { font-family: var(--mono); font-size: 15px; font-variant-numeric: tabular-nums; display: flex; justify-content: flex-end; line-height: 1.2; }
+  .chip .val.pos { color: var(--act); }
+  .chip .val.neg { color: var(--text-faint); }
+  .chip .val.flat { color: var(--good); }
+
+  /* ---------- Table (ledger) ---------- */
+  .table-scroll { overflow-x: auto; }
+  table.ledger { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 560px; }
+  table.ledger th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--text-muted);
+    font-size: 11.5px;
+    padding: 0 8px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  table.ledger td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+  }
+  table.ledger tr:last-child td { border-bottom: none; }
+  table.ledger input, table.ledger select {
+    width: 100%;
+    background: var(--panel-alt);
+    border: 1px solid var(--line-soft);
+    color: var(--text);
+    border-radius: var(--radius-s);
+    padding: 5px 7px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  table.ledger select { font-family: var(--sans); }
+  table.ledger input[type=text] { font-family: var(--sans); }
+  table.ledger input[type=text].name-input {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  table.ledger input[type=text].name-input[readonly] {
+    cursor: default;
+    color: var(--text-muted);
+  }
+  table.ledger input[type=number] {
+    text-align: right;
+    -moz-appearance: textfield;
+  }
+  table.ledger input[type=number]::-webkit-outer-spin-button,
+  table.ledger input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  table.ledger th.num, table.ledger td.num { text-align: right; }
+
+  .row-remove {
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    padding: 4px;
+  }
+  .row-remove:hover { color: var(--act); }
+
+  .add-row-btn, .btn {
+    background: var(--panel-alt);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: var(--radius-s);
+    padding: 8px 14px;
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .add-row-btn:hover, .btn:hover { border-color: var(--focus); }
+  .btn.primary { background: var(--act); border-color: var(--act); color: #fff; }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn-row { display:flex; gap:10px; flex-wrap:wrap; }
+
+  .ledger-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .price-status {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin: 0 0 14px;
+  }
+  .price-status.ok { color: var(--good); }
+  .price-status.warn { color: var(--warn); }
+  table.ledger input.price-error {
+    border-color: var(--act);
+  }
+  table.ledger input.price-note {
+    border-color: var(--focus);
+  }
+
+  .ledger-total {
+    display:flex; justify-content: space-between;
+    font-size: 12.5px; color: var(--text-muted);
+    margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line);
+  }
+  .ledger-total b { color: var(--text); font-family: var(--mono); }
+
+  .excluded-note { color: var(--text-faint); font-size: 12px; margin-top: 6px; }
+
+  .tilt-badge {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--c-scv);
+    background: var(--panel-alt);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-s);
+    padding: 4px 9px;
+    white-space: nowrap;
+  }
+
+  .switch-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .switch-input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 36px;
+    height: 20px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--panel-alt);
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s ease;
+    margin: 0;
+    padding: 0;
+    flex: none;
+  }
+  .switch-input:checked {
+    background: var(--act);
+    border-color: var(--act);
+  }
+  .switch-input::before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    top: 1px;
+    left: 1px;
+    transition: left 0.2s ease;
+  }
+  .switch-input:checked::before { left: 17px; }
+  .switch-text { font-size: 12.5px; color: var(--text-muted); }
+
+  .data-tools {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .data-tools .hint { color: var(--text-faint); font-size: 11.5px; width: 100%; margin: -2px 0 0; }
+
+  /* ---------- Settings ---------- */
+  details.settings summary {
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--serif);
+    font-size: 17px;
+  }
+  details.settings summary::-webkit-details-marker { display: none; }
+  details.settings summary::before {
+    content: "›";
+    display: inline-block;
+    margin-right: 6px;
+    transition: transform 0.15s ease;
+  }
+  details.settings[open] summary::before { transform: rotate(90deg); }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11.5px; color: var(--text-muted); }
+  .field input {
+    background: var(--panel-alt);
+    border: 1px solid var(--line-soft);
+    color: var(--text);
+    border-radius: var(--radius-s);
+    padding: 7px 9px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+  }
+  .slider-row { grid-column: 1 / -1; display:flex; align-items:center; gap: 12px; }
+  .slider-row input[type=range] { flex: 1; accent-color: var(--act); }
+  .slider-row .slider-val { font-family: var(--mono); font-size: 13.5px; width: 48px; text-align: right; }
+  .settings-foot { margin-top: 16px; font-size: 12px; color: var(--text-faint); line-height: 1.6; }
+
+  /* ---------- History ---------- */
+  .log-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .log-form .field-full { grid-column: 1 / -1; }
+  .log-form input, .log-form select {
+    width: 100%;
+    background: var(--panel-alt);
+    border: 1px solid var(--line-soft);
+    color: var(--text);
+    border-radius: var(--radius-s);
+    padding: 7px 9px;
+    font-family: var(--sans);
+    font-size: 13px;
+  }
+  .log-list { display: flex; flex-direction: column; gap: 0; max-height: 340px; overflow-y: auto; }
+  .log-item {
+    display: flex; justify-content: space-between; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--line-soft);
+    font-size: 13px;
+  }
+  .log-item:last-child { border-bottom: none; }
+  .log-item .li-main { flex: 1; }
+  .log-item .li-date { color: var(--text-faint); font-size: 11.5px; font-family: var(--mono); }
+  .log-item .li-ticker { font-family: var(--mono); font-weight: 500; }
+  .log-item .li-note { color: var(--text-muted); font-size: 12.5px; margin-top: 2px; }
+  .log-item .li-amt { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .log-empty { color: var(--text-faint); font-size: 13px; padding: 6px 0 2px; }
+  .log-del { background:none; border:none; color: var(--text-faint); cursor:pointer; font-size: 13px; }
+  .log-del:hover { color: var(--act); }
+
+  .footnote {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 11.5px;
+    margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <h1>Portfolio Console</h1>
+      <div class="sub">Track each account against its own target — one goal at a time.</div>
+    </div>
+    <div style="display:flex; align-items:flex-end; gap: 16px;">
+      <div class="totals">
+        <div class="figure" id="totalFigure">—</div>
+        <div class="label" id="totalLabel">total tracked value</div>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button">Theme</button>
+    </div>
+  </div>
+
+  <div class="tab-bar" id="tabBar"></div>
+  <p class="portfolio-desc" id="portfolioDesc"></p>
+
+  <div id="recCard" class="rec">
+    <div class="eyebrow" id="recEyebrow">NEXT CONTRIBUTION</div>
+    <div class="headline" id="recHeadline">—</div>
+    <div class="detail" id="recDetail">—</div>
+  </div>
+
+  <div class="grid">
+    <!-- MAIN COLUMN -->
+    <div>
+      <div class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;">
+          <h2>Actual weights vs. target</h2>
+          <div id="tiltBadge" class="tilt-badge">—</div>
+        </div>
+        <p class="panel-note" id="ribbonNote">Developed / Emerging Markets / Small-cap-value, excluding individual stock positions.</p>
+
+        <div class="ribbon-wrap">
+          <div id="targetGuides" class="target-guides"></div>
+          <div class="ribbon-row">
+            <div class="rlabel"><span>Current</span></div>
+            <div class="ribbon-track" id="rowActual"></div>
+          </div>
+          <div class="ribbon-row" style="margin-bottom:0;">
+            <div class="rlabel"><span>Target</span></div>
+            <div class="ribbon-track" id="rowTarget"></div>
+          </div>
+        </div>
+
+        <div class="legend" id="legend"></div>
+        <div class="chips" id="chips"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Holdings ledger</h2>
+        <p class="panel-note" id="ledgerNote">—</p>
+        <div class="ledger-toolbar">
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button class="add-row-btn" id="addRow" type="button">+ Add holding</button>
+            <button class="btn" id="refreshPrices" type="button">Refresh prices</button>
+          </div>
+          <label class="switch-label">
+            <input type="checkbox" id="hideOther" class="switch-input">
+            <span class="switch-text">Hide other</span>
+          </label>
+        </div>
+        <p class="price-status" id="priceStatus">Live prices not fetched yet.</p>
+        <div class="table-scroll">
+          <table class="ledger">
+            <thead>
+              <tr>
+                <th style="width:14%;">Query symbol</th>
+                <th style="width:17%;">Name</th>
+                <th style="width:13%;">Bucket</th>
+                <th class="num" style="width:8%;">Units</th>
+                <th class="num" style="width:16%;" id="priceColHeader">Price (USD)</th>
+                <th class="num" style="width:13%;">Value</th>
+                <th style="width:5%;"></th>
+              </tr>
+            </thead>
+            <tbody id="ledgerBody"></tbody>
+          </table>
+        </div>
+        <div class="ledger-total">
+          <span>Rebalance-tracked total</span>
+          <b id="ledgerRebalTotal">—</b>
+        </div>
+        <div class="ledger-total">
+          <span>Other positions (excluded from ratio)</span>
+          <b id="ledgerOtherTotal">—</b>
+        </div>
+        <div class="data-tools">
+          <button class="btn" id="exportJson" type="button">Export data (JSON)</button>
+          <button class="btn" id="importJson" type="button">Import data (JSON)</button>
+          <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
+          <p class="hint">Export saves everything on this page — every portfolio's holdings, settings, and contribution log — as a file you can back up or move to another device. Import replaces everything currently here.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDE COLUMN -->
+    <div>
+
+      <div class="panel">
+        <details class="settings" open>
+          <summary>Market Weightage</summary>
+          <p class="panel-note" id="weightModeNote" style="margin-top:-2px;">—</p>
+          <div class="ledger-toolbar" style="margin-bottom:12px;">
+            <button class="btn" id="refreshWeights" type="button">Refresh base weights</button>
+          </div>
+          <p class="price-status" id="weightsStatus">Base weights not fetched yet — edit manually or refresh from marketcaps.site.</p>
+          <div class="field-grid">
+            <div class="field">
+              <label for="baseD">Developed World base weight (%)</label>
+              <input type="number" id="baseD" step="0.1" min="0" max="100">
+            </div>
+            <div class="field">
+              <label for="baseE">Emerging Markets base weight (%)</label>
+              <input type="number" id="baseE" step="0.1" min="0" max="100">
+            </div>
+            <div class="field" id="scvWeightField">
+              <label for="baseS">Small-cap-value base weight (%)</label>
+              <input type="number" id="baseS" step="0.1" min="0" max="100">
+            </div>
+            <div class="field">
+              <label for="baseCurrency">Reporting currency</label>
+              <input type="text" id="baseCurrency" maxlength="6">
+            </div>
+            <div class="field">
+              <label for="fxTarget">Convert to</label>
+              <input type="text" id="fxTarget" maxlength="6" placeholder="e.g. SGD">
+            </div>
+            <div class="field">
+              <label for="fxRate">FX rate</label>
+              <div style="display:flex; gap:6px;">
+                <input type="number" id="fxRate" step="0.0001" min="0" style="flex:1;">
+                <button class="btn" id="refreshFx" type="button" style="white-space:nowrap;">Refresh</button>
+              </div>
+            </div>
+            <div class="slider-row" id="satelliteRow">
+              <label for="satSlider" style="font-size:11.5px; color:var(--text-muted); white-space:nowrap;">SCV satellite tilt</label>
+              <input type="range" id="satSlider" min="0" max="30" step="0.5">
+              <span class="slider-val" id="satVal">—</span>
+            </div>
+          </div>
+          <p class="price-status" id="fxStatus" style="margin-top:8px;"></p>
+          <div class="settings-foot">
+            Specific to this portfolio — a 3-fund account like the brokerage runs a small-cap-value satellite tilt; a 2-fund account like CPF just uses a plain Developed/EM market-cap split. "Refresh base weights" pulls the matching weighting from <a href="https://www.marketcaps.site/" target="_blank" rel="noopener">marketcaps.site</a>'s own CSV export via this app's backend — same math the site itself uses, computed here from the raw market caps rather than scraped off the page. FX rate is currently display-only (not applied to the total); "Refresh" fetches it live from Yahoo via the backend, same as holding prices. Live prices for holdings are served the same way — via this app's own local backend (<code>backend.js</code>), same-origin, no CORS proxy needed — and only work while it's running and you're viewing the page at its <code>http://localhost</code> address.
+          </div>
+        </details>
+      </div>
+
+      <div class="panel">
+        <h2>Contribution log</h2>
+        <p class="panel-note">Record what you bought each DCA round.</p>
+        <div class="log-form">
+          <div class="field">
+            <label for="logDate">Date</label>
+            <input type="date" id="logDate">
+          </div>
+          <div class="field">
+            <label for="logTicker">Ticker</label>
+            <input type="text" id="logTicker" placeholder="e.g. EIMI">
+          </div>
+          <div class="field">
+            <label for="logUnits">Units</label>
+            <input type="number" id="logUnits" step="0.0001" min="0" placeholder="0">
+          </div>
+          <div class="field">
+            <label for="logPrice">Price (optional)</label>
+            <input type="number" id="logPrice" step="0.0001" min="0" placeholder="0.00">
+          </div>
+          <div class="field-full">
+            <label for="logNote">Note (optional)</label>
+            <input type="text" id="logNote" placeholder="e.g. lagging bucket this month">
+          </div>
+          <div class="field-full">
+            <button class="btn primary" id="logAdd" type="button" style="width:100%;">Log contribution</button>
+          </div>
+        </div>
+        <div class="log-list" id="logList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footnote">Data stays in this browser only (local storage) — nothing is sent anywhere. Not financial advice.</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "portfolio-console-state-v1";
+
+  // Category set shared across every portfolio's rebalance ribbon/legend/
+  // table/dropdown. shortLabel is used only in the compact bucket dropdown;
+  // label is used everywhere else (legend, chips, recommendation card).
+  var CATS = {
+    developed: { label: "Developed World", shortLabel: "DM", cls: "developed" },
+    em: { label: "Emerging Markets", shortLabel: "EM", cls: "em" },
+    scv: { label: "Small-cap-value", shortLabel: "SCV", cls: "scv" },
+    other: { label: "Other / individual", shortLabel: "Others", cls: "other" }
+  };
+
+  function uid(){ return Math.random().toString(36).slice(2, 10); }
+
+  // Each portfolio is its own goal-based account with its own holdings,
+  // weightage settings, hideOther flag and contribution log. weightMode
+  // decides which shape its Market Weightage panel and target formula use:
+  // "tilt" = 3-fund base weights (Developed/EM/SCV) + a satellite tilt on
+  // SCV, like the brokerage's small-cap-value strategy. "simple" = 2-fund
+  // base weights (Developed/EM only), no small-cap component, no tilt —
+  // for an account like CPF that just wants a plain market-cap split.
+  // These committed defaults are intentionally generic (no personal
+  // holdings) — real holdings are meant to come from a local seed-data.json
+  // (see /api/seed-data below), which you gitignore so it never gets
+  // committed. Structure/strategy defaults (weightMode, base weights,
+  // currency) stay here since they're not personal, just a starting point.
+  function defaultBrokeragePortfolio(){
+    return {
+      label: "Accumulation Portfolio (IBKR)",
+      description: "Market-cap core (Developed + EM) plus a small-cap-value satellite tilt.",
+      sourceHint: "Enter unit counts and a price per unit (USD) for each holding from Interactive Brokers.",
+      weightMode: "tilt",
+      baseWeights: { developed: 79.8, em: 10.7, scv: 9.4 },
+      satellite: 12,
+      baseCurrency: "USD",
+      fxRate: 1.2667,
+      fxTarget: "SGD",
+      hideOther: false,
+      holdings: [],
+      history: []
+    };
+  }
+
+  function defaultCpfPortfolio(){
+    return {
+      label: "CPFIS-OA",
+      description: "CPF Ordinary Account funds — simple market-cap-weighted Developed + EM split, no small-cap tilt.",
+      sourceHint: "Enter unit counts for each CPFIS fund; prices refresh from Yahoo the same way as the brokerage account.",
+      weightMode: "simple",
+      baseWeights: { developed: 88.1412, em: 11.8588, scv: 0 },
+      satellite: 0,
+      baseCurrency: "SGD",
+      fxRate: 0.74,
+      fxTarget: "USD",
+      hideOther: false,
+      holdings: [],
+      history: []
+    };
+  }
+
+  function defaultState(){
+    return {
+      theme: "light",
+      activeTab: "brokerage",
+      portfolios: { brokerage: defaultBrokeragePortfolio(), cpf: defaultCpfPortfolio() }
+    };
+  }
+
+  function normalizePortfolio(p){
+    var d = defaultBrokeragePortfolio();
+    p.label = p.label || d.label;
+    p.description = p.description || d.description;
+    p.sourceHint = p.sourceHint || d.sourceHint;
+    if (p.weightMode !== "simple") p.weightMode = "tilt";
+    var wd = p.weightMode === "simple" ? defaultCpfPortfolio() : d;
+    p.baseWeights = p.baseWeights || wd.baseWeights;
+    if (p.baseWeights.scv === undefined) p.baseWeights.scv = 0;
+    if (p.satellite === undefined) p.satellite = wd.satellite;
+    if (p.baseCurrency === undefined) p.baseCurrency = wd.baseCurrency;
+    if (p.fxRate === undefined) p.fxRate = wd.fxRate;
+    if (p.fxTarget === undefined) {
+      // Migrate the old free-text "USD → SGD" label into a plain currency code.
+      var parsed = (p.fxLabel || "").split("→")[1];
+      p.fxTarget = (parsed ? parsed.trim() : wd.fxTarget).toUpperCase();
+    }
+    delete p.fxLabel;
+    if (p.hideOther === undefined) p.hideOther = false;
+    delete p.apiKey;
+    delete p.corsProxy;
+    if (!Array.isArray(p.holdings)) p.holdings = [];
+    if (!Array.isArray(p.history)) p.history = [];
+    p.holdings.forEach(function(h){
+      if (!h.id) h.id = uid();
+      if (!CATS[h.category]) h.category = "other";
+      // Migrate older value-only holdings: units=1 at the old value keeps
+      // the total and ratio identical until the user fills in real units.
+      if (h.units === undefined || h.price === undefined) {
+        var oldValue = Number(h.value) || 0;
+        h.units = h.units === undefined ? 1 : h.units;
+        h.price = h.price === undefined ? oldValue : h.price;
+      }
+      h.units = Number(h.units) || 0;
+      h.price = Number(h.price) || 0;
+      if (h.pricedAt === undefined) h.pricedAt = null;
+      if (h.querySymbol === undefined) h.querySymbol = "";
+      if (h.priceError === undefined) h.priceError = null;
+      if (h.priceNote === undefined) h.priceNote = null;
+      // Migrate old ticker-only holdings: the ticker becomes the initial
+      // display Name, since it's the only label we had before.
+      if (h.name === undefined) h.name = h.ticker || "";
+      delete h.value;
+      delete h.currency;
+      delete h.ticker;
+    });
+    p.history.forEach(function(entry){
+      if (!entry.id) entry.id = uid();
+      if (entry.units === undefined) {
+        // Migrate older dollar-amount entries: keep the amount visible as
+        // a single "unit" priced at that amount, so nothing is lost.
+        entry.units = 1;
+        entry.price = Number(entry.amount) || 0;
+      }
+      entry.units = Number(entry.units) || 0;
+      if (entry.price !== undefined) entry.price = Number(entry.price) || 0;
+      delete entry.amount;
+    });
+    return p;
+  }
+
+  function normalize(parsed){
+    if (parsed && parsed.portfolios && typeof parsed.portfolios === "object") {
+      var keys = Object.keys(parsed.portfolios);
+      if (!keys.length) return defaultState();
+      // Market weightage briefly lived at the top level (shared across
+      // portfolios); it's back to per-portfolio now, so push it back down
+      // into whichever portfolio doesn't already have its own copy —
+      // brokerage keeps the tilt weights, everything else starts fresh.
+      if (parsed.baseWeights || parsed.satellite !== undefined || parsed.baseCurrency || parsed.fxRate !== undefined || parsed.fxTarget) {
+        var brokerageKey = parsed.portfolios.brokerage ? "brokerage" : keys[0];
+        keys.forEach(function(k){
+          var target = parsed.portfolios[k];
+          if (k === brokerageKey) {
+            if (!target.baseWeights && parsed.baseWeights) target.baseWeights = parsed.baseWeights;
+            if (target.satellite === undefined && parsed.satellite !== undefined) target.satellite = parsed.satellite;
+            if (!target.baseCurrency && parsed.baseCurrency) target.baseCurrency = parsed.baseCurrency;
+            if (target.fxRate === undefined && parsed.fxRate !== undefined) target.fxRate = parsed.fxRate;
+            if (!target.fxTarget && parsed.fxTarget) target.fxTarget = parsed.fxTarget;
+          }
+        });
+        delete parsed.baseWeights;
+        delete parsed.satellite;
+        delete parsed.baseCurrency;
+        delete parsed.fxRate;
+        delete parsed.fxTarget;
+      }
+      keys.forEach(function(k){ parsed.portfolios[k] = normalizePortfolio(parsed.portfolios[k]); });
+      // Newly-added portfolio types get seeded in for everyone, not just
+      // fresh installs, so existing users see them without losing data.
+      if (!parsed.portfolios.cpf) parsed.portfolios.cpf = defaultCpfPortfolio();
+      if (!parsed.activeTab || !parsed.portfolios[parsed.activeTab]) parsed.activeTab = keys[0];
+      if (!parsed.theme) parsed.theme = "light";
+      return parsed;
+    }
+    // Migrate the old flat (single-portfolio) shape into the new structure.
+    if (parsed && Array.isArray(parsed.holdings)) {
+      var migrated = defaultState();
+      migrated.theme = parsed.theme || "light";
+      migrated.activeTab = "brokerage";
+      migrated.portfolios.brokerage = normalizePortfolio(parsed);
+      return migrated;
+    }
+    return defaultState();
+  }
+
+  var usedBuiltInDefaults = false;
+  var state = load();
+
+  function load(){
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) { usedBuiltInDefaults = true; return defaultState(); }
+      var parsed = JSON.parse(raw);
+      return normalize(parsed);
+    } catch (e) {
+      usedBuiltInDefaults = true;
+      return defaultState();
+    }
+  }
+
+  function save(){
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) { /* storage unavailable — continue in-memory */ }
+  }
+
+  function getActive(){
+    return state.portfolios[state.activeTab];
+  }
+
+  function fmtUnits(n){
+    n = Number(n) || 0;
+    var s = n.toFixed(4);
+    s = s.replace(/0+$/, "").replace(/\.$/, "");
+    return s === "" ? "0" : s;
+  }
+  function fmtMoney(n){
+    if (!isFinite(n)) n = 0;
+    return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  }
+  function fmtPct(n, dp){
+    dp = dp === undefined ? 1 : dp;
+    return (n*100).toFixed(dp) + "%";
+  }
+
+  // ---------- computations (brokerage tilt formula) ----------
+  function computeTargets(p){
+    var D0 = (Number(p.baseWeights.developed)||0)/100;
+    var E0 = (Number(p.baseWeights.em)||0)/100;
+    var S0 = (Number(p.baseWeights.scv)||0)/100;
+    var sat = (Number(p.satellite)||0)/100;
+    var S1 = S0 + sat;
+    var denom = (D0 + E0);
+    var k = denom > 0 ? (1 - S1) / denom : 0;
+    var D1 = D0 * k;
+    var E1 = E0 * k;
+    return { developed: D1, em: E1, scv: S1 };
+  }
+
+  function holdingValue(h){
+    return (Number(h.units) || 0) * (Number(h.price) || 0);
+  }
+
+  function computeActual(p){
+    var totals = { developed: 0, em: 0, scv: 0, other: 0 };
+    p.holdings.forEach(function(h){
+      var v = holdingValue(h);
+      if (totals[h.category] === undefined) h.category = "other";
+      totals[h.category] += v;
+    });
+    var rebalTotal = totals.developed + totals.em + totals.scv;
+    var pct = {
+      developed: rebalTotal ? totals.developed/rebalTotal : 0,
+      em: rebalTotal ? totals.em/rebalTotal : 0,
+      scv: rebalTotal ? totals.scv/rebalTotal : 0
+    };
+    return { totals: totals, rebalTotal: rebalTotal, pct: pct };
+  }
+
+  // ---------- render ----------
+  function renderTabs(){
+    var bar = document.getElementById("tabBar");
+    bar.innerHTML = "";
+    Object.keys(state.portfolios).forEach(function(key){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tab-btn" + (key === state.activeTab ? " active" : "");
+      btn.textContent = state.portfolios[key].label;
+      btn.addEventListener("click", function(){
+        if (key === state.activeTab) return;
+        state.activeTab = key;
+        save(); render();
+        autoRefreshActiveTab();
+      });
+      bar.appendChild(btn);
+    });
+    document.getElementById("portfolioDesc").textContent = getActive().description || "";
+  }
+
+  function render(){
+    renderTabs();
+    var p = getActive();
+    var targets = computeTargets(p);
+    var actual = computeActual(p);
+    var otherTotal = actual.totals.other;
+    var grandTotal = actual.rebalTotal + otherTotal;
+
+    var currency = (p.baseCurrency || "USD").toUpperCase();
+    document.getElementById("totalFigure").textContent = "$" + fmtMoney(grandTotal);
+    document.getElementById("totalLabel").textContent = p.label + " · " + currency;
+    document.getElementById("priceColHeader").textContent = "Price (" + currency + ")";
+
+    document.getElementById("tiltBadge").textContent = (p.weightMode === "simple")
+      ? "2-fund split, no tilt"
+      : "SCV tilt +" + fmtPct(p.satellite/100, 1);
+    document.getElementById("ledgerNote").textContent = p.sourceHint || "";
+
+    // simple (2-fund) portfolios don't have a small-cap-value slice at all —
+    // drop it from the ribbon, legend, chips and recommendation entirely
+    // rather than showing a permanent, meaningless 0%/0% row.
+    var cats = p.weightMode === "simple" ? ["developed","em"] : ["developed","em","scv"];
+    document.getElementById("ribbonNote").textContent = p.weightMode === "simple"
+      ? "Developed / Emerging Markets, excluding individual stock positions."
+      : "Developed / Emerging Markets / Small-cap-value, excluding individual stock positions.";
+
+    // ribbons
+    renderRibbon("rowActual", actual.pct, cats);
+    renderRibbon("rowTarget", targets, cats);
+    renderGuides(targets, cats);
+
+    // legend
+    var legend = document.getElementById("legend");
+    legend.innerHTML = "";
+    cats.forEach(function(key){
+      var c = CATS[key];
+      var el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = '<span class="dot ' + c.cls + '"></span>' + c.label +
+        ' — <b>' + fmtPct(actual.pct[key]) + '</b> now / <b>' + fmtPct(targets[key]) + '</b> target';
+      legend.appendChild(el);
+    });
+
+    // delta chips
+    var deltas = {
+      developed: targets.developed - actual.pct.developed,
+      em: targets.em - actual.pct.em,
+      scv: targets.scv - actual.pct.scv
+    };
+    var chips = document.getElementById("chips");
+    chips.innerHTML = "";
+    cats.forEach(function(key){
+      var c = CATS[key];
+      var d = deltas[key];
+      var cls = Math.abs(d) < 0.005 ? "flat" : (d > 0 ? "pos" : "neg");
+      var sign = d > 0 ? "+" : "";
+      var chip = document.createElement("div");
+      chip.className = "chip";
+      chip.innerHTML = '<div class="name"><span class="dot ' + c.cls + '" style="width:7px;height:7px;border-radius:2px;display:inline-block;"></span>' + c.label + '</div>' +
+        '<div class="val ' + cls + '">' + sign + fmtPct(d, 2) + '</div>';
+      chips.appendChild(chip);
+    });
+
+    // recommendation
+    var order = cats.slice().sort(function(a,b){ return deltas[b]-deltas[a]; });
+    var top = order[0];
+    var topDelta = deltas[top];
+    var recCard = document.getElementById("recCard");
+    var eyebrow = document.getElementById("recEyebrow");
+    var headline = document.getElementById("recHeadline");
+    var detail = document.getElementById("recDetail");
+
+    if (actual.rebalTotal === 0) {
+      recCard.className = "rec";
+      eyebrow.textContent = "NO DATA YET";
+      headline.textContent = "Add holdings to see a recommendation";
+      detail.textContent = "Fill in the ledger below with current market values.";
+    } else if (topDelta <= 0.005) {
+      recCard.className = "rec balanced";
+      eyebrow.textContent = "ON TARGET";
+      headline.textContent = "All buckets are within 0.5% of target";
+      detail.textContent = "Split this month's contribution however is convenient — none is meaningfully lagging.";
+    } else {
+      recCard.className = "rec";
+      eyebrow.textContent = "NEXT CONTRIBUTION";
+      headline.innerHTML = "Direct this DCA round to <span class=\"amt\">" + CATS[top].label + "</span>";
+      detail.textContent = "It's running " + fmtPct(topDelta, 2) + " below target (" +
+        fmtPct(actual.pct[top]) + " now vs. " + fmtPct(targets[top]) + " target).";
+    }
+
+    // ledger table
+    renderLedger(p);
+    document.getElementById("ledgerRebalTotal").textContent = fmtMoney(actual.rebalTotal);
+    document.getElementById("ledgerOtherTotal").textContent = fmtMoney(otherTotal);
+
+    // settings fields (only set if not focused, to avoid fighting user input)
+    setIfNotFocused("baseD", round2(p.baseWeights.developed));
+    setIfNotFocused("baseE", round2(p.baseWeights.em));
+    setIfNotFocused("baseS", round2(p.baseWeights.scv));
+    setIfNotFocused("baseCurrency", p.baseCurrency);
+    setIfNotFocused("fxRate", p.fxRate);
+    setIfNotFocused("fxTarget", p.fxTarget);
+    setIfNotFocused("satSlider", p.satellite);
+    document.getElementById("satVal").textContent = Number(p.satellite).toFixed(1) + "%";
+    document.getElementById("hideOther").checked = !!p.hideOther;
+
+    // "simple" (2-fund) portfolios like CPF don't have a small-cap slice or
+    // a tilt to apply, so those controls are irrelevant — hide them rather
+    // than show inputs that do nothing.
+    var isSimple = p.weightMode === "simple";
+    document.getElementById("scvWeightField").style.display = isSimple ? "none" : "";
+    document.getElementById("satelliteRow").style.display = isSimple ? "none" : "";
+    document.getElementById("weightModeNote").textContent = isSimple
+      ? "This account uses a plain 2-fund market-cap split (Developed + EM) — no small-cap-value tilt."
+      : "This account runs the 3-fund small-cap-value satellite tilt.";
+
+    renderHistory(p);
+  }
+
+  function setIfNotFocused(id, val){
+    var el = document.getElementById(id);
+    if (document.activeElement === el) return;
+    el.value = val;
+  }
+
+  function renderRibbon(elId, pctObj, cats){
+    var el = document.getElementById(elId);
+    el.innerHTML = "";
+    (cats || ["developed","em","scv"]).forEach(function(key){
+      var seg = document.createElement("div");
+      seg.className = "ribbon-seg " + CATS[key].cls;
+      var pct = pctObj[key] || 0;
+      seg.style.width = (pct*100) + "%";
+      if (pct > 0.06) seg.textContent = fmtPct(pct, 0);
+      el.appendChild(seg);
+    });
+  }
+
+  function renderGuides(targets, cats){
+    var wrap = document.getElementById("targetGuides");
+    wrap.innerHTML = "";
+    cats = cats || ["developed","em","scv"];
+    var running = 0;
+    var boundaries = [];
+    for (var i = 0; i < cats.length - 1; i++) {
+      running += targets[cats[i]] || 0;
+      boundaries.push(running);
+    }
+    boundaries.forEach(function(b){
+      var line = document.createElement("div");
+      line.className = "guide";
+      line.style.left = (b*100) + "%";
+      wrap.appendChild(line);
+    });
+  }
+
+  function renderLedger(p){
+    var body = document.getElementById("ledgerBody");
+    body.innerHTML = "";
+    var visible = p.hideOther ? p.holdings.filter(function(h){ return h.category !== "other"; }) : p.holdings;
+    if (!visible.length) {
+      var tr0 = document.createElement("tr");
+      var td0 = document.createElement("td");
+      td0.colSpan = 7;
+      td0.className = "excluded-note";
+      td0.style.padding = "10px 8px";
+      td0.textContent = p.hideOther ? "No non-other holdings — showing none because \u201chide other\u201d is on." : "No holdings yet — add one below.";
+      tr0.appendChild(td0);
+      body.appendChild(tr0);
+      return;
+    }
+    visible.forEach(function(h){
+      var tr = document.createElement("tr");
+
+      var tdQuery = document.createElement("td");
+      var inpQuery = document.createElement("input");
+      inpQuery.type = "text";
+      inpQuery.value = h.querySymbol || "";
+      inpQuery.placeholder = "blank = manual price";
+      inpQuery.addEventListener("input", function(){ h.querySymbol = inpQuery.value; save(); });
+      tdQuery.appendChild(inpQuery);
+
+      var tdName = document.createElement("td");
+      var inpName = document.createElement("input");
+      inpName.type = "text";
+      inpName.className = "name-input";
+      inpName.readOnly = true;
+      inpName.value = h.name || "";
+      inpName.title = h.name || "(no name yet — set a Query symbol and Refresh prices)";
+      inpName.placeholder = "set via Refresh prices";
+      tdName.appendChild(inpName);
+
+      var tdCat = document.createElement("td");
+      var sel = document.createElement("select");
+      Object.keys(CATS).forEach(function(key){
+        var opt = document.createElement("option");
+        opt.value = key;
+        opt.textContent = CATS[key].shortLabel || CATS[key].label;
+        if (h.category === key) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener("change", function(){ h.category = sel.value; save(); render(); });
+      tdCat.appendChild(sel);
+
+      var tdUnits = document.createElement("td");
+      tdUnits.className = "num";
+      var inpUnits = document.createElement("input");
+      inpUnits.type = "number";
+      inpUnits.step = "0.0001";
+      inpUnits.min = "0";
+      inpUnits.value = h.units;
+      inpUnits.addEventListener("input", function(){ h.units = parseFloat(inpUnits.value) || 0; save(); render(); });
+      tdUnits.appendChild(inpUnits);
+
+      var tdPrice = document.createElement("td");
+      tdPrice.className = "num";
+      var inpPrice = document.createElement("input");
+      inpPrice.type = "number";
+      inpPrice.step = "0.0001";
+      inpPrice.min = "0";
+      inpPrice.value = Number(h.price).toFixed(4).replace(/\.?0+$/, "") || "0";
+      var priceTitle = h.pricedAt ? "Price last set " + h.pricedAt : "";
+      if (h.priceError) {
+        inpPrice.classList.add("price-error");
+        priceTitle = h.priceError + (priceTitle ? " — " + priceTitle : "");
+      } else if (h.priceNote) {
+        inpPrice.classList.add("price-note");
+        priceTitle = h.priceNote + (priceTitle ? " — " + priceTitle : "");
+      }
+      inpPrice.title = priceTitle;
+      inpPrice.addEventListener("input", function(){
+        h.price = parseFloat(inpPrice.value) || 0;
+        h.pricedAt = new Date().toISOString().slice(0,10);
+        h.priceError = null;
+        h.priceNote = null;
+        inpPrice.title = "Price last set " + h.pricedAt;
+        inpPrice.classList.remove("price-error", "price-note");
+        save(); render();
+      });
+      tdPrice.appendChild(inpPrice);
+
+      var tdVal = document.createElement("td");
+      tdVal.className = "num";
+      tdVal.style.fontFamily = "var(--mono)";
+      tdVal.style.color = "var(--text-muted)";
+      tdVal.style.whiteSpace = "nowrap";
+      tdVal.textContent = fmtMoney(holdingValue(h));
+
+      var tdDel = document.createElement("td");
+      var btn = document.createElement("button");
+      btn.className = "row-remove";
+      btn.type = "button";
+      btn.textContent = "×";
+      btn.title = "Remove holding";
+      btn.addEventListener("click", function(){
+        p.holdings = p.holdings.filter(function(x){ return x.id !== h.id; });
+        save(); render();
+      });
+      tdDel.appendChild(btn);
+
+      tr.appendChild(tdQuery);
+      tr.appendChild(tdName);
+      tr.appendChild(tdCat);
+      tr.appendChild(tdUnits);
+      tr.appendChild(tdPrice);
+      tr.appendChild(tdVal);
+      tr.appendChild(tdDel);
+      body.appendChild(tr);
+    });
+  }
+
+  function renderHistory(p){
+    var list = document.getElementById("logList");
+    list.innerHTML = "";
+    if (!p.history.length) {
+      list.innerHTML = '<div class="log-empty">No contributions logged yet.</div>';
+      return;
+    }
+    var items = p.history.slice().sort(function(a,b){ return (b.date||"").localeCompare(a.date||""); });
+    items.forEach(function(entry){
+      var row = document.createElement("div");
+      row.className = "log-item";
+      var main = document.createElement("div");
+      main.className = "li-main";
+      main.innerHTML = '<span class="li-date">' + (entry.date || "") + '</span> &nbsp; <span class="li-ticker">' + escapeHtml(entry.ticker || "") + '</span>' +
+        (entry.note ? '<div class="li-note">' + escapeHtml(entry.note) + '</div>' : '');
+      var amt = document.createElement("div");
+      amt.className = "li-amt";
+      var unitsLabel = fmtUnits(entry.units) + " units";
+      amt.textContent = unitsLabel;
+      if (entry.price) {
+        var costLine = document.createElement("div");
+        costLine.className = "li-note";
+        costLine.style.textAlign = "right";
+        costLine.textContent = "≈$" + fmtMoney(entry.units * entry.price) + " @ " + entry.price;
+        amt.appendChild(document.createElement("br"));
+        amt.appendChild(costLine);
+      }
+      var del = document.createElement("button");
+      del.className = "log-del";
+      del.type = "button";
+      del.textContent = "remove";
+      del.addEventListener("click", function(){
+        p.history = p.history.filter(function(x){ return x.id !== entry.id; });
+        save(); render();
+      });
+      var right = document.createElement("div");
+      right.style.display = "flex";
+      right.style.flexDirection = "column";
+      right.style.alignItems = "flex-end";
+      right.style.gap = "4px";
+      right.appendChild(amt);
+      right.appendChild(del);
+      row.appendChild(main);
+      row.appendChild(right);
+      list.appendChild(row);
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+  }
+
+  // ---------- wiring ----------
+  document.getElementById("addRow").addEventListener("click", function(){
+    var p = getActive();
+    p.holdings.push({ id: uid(), name: "", category: "developed", units: 0, price: 0, pricedAt: null, querySymbol: "", priceError: null, priceNote: null });
+    save(); render();
+  });
+
+  ["baseD","baseE","baseS"].forEach(function(id, idx){
+    var key = ["developed","em","scv"][idx];
+    document.getElementById(id).addEventListener("input", function(e){
+      getActive().baseWeights[key] = parseFloat(e.target.value) || 0;
+      save(); render();
+    });
+  });
+  document.getElementById("baseCurrency").addEventListener("input", function(e){
+    getActive().baseCurrency = e.target.value;
+    save(); render();
+  });
+  document.getElementById("fxRate").addEventListener("input", function(e){
+    getActive().fxRate = parseFloat(e.target.value) || 0;
+    save();
+  });
+  document.getElementById("fxTarget").addEventListener("input", function(e){
+    getActive().fxTarget = e.target.value.toUpperCase();
+    save();
+  });
+  document.getElementById("hideOther").addEventListener("change", function(e){
+    getActive().hideOther = e.target.checked;
+    save(); render();
+  });
+  document.getElementById("satSlider").addEventListener("input", function(e){
+    getActive().satellite = parseFloat(e.target.value) || 0;
+    save(); render();
+  });
+
+  document.getElementById("logAdd").addEventListener("click", function(){
+    var date = document.getElementById("logDate").value || new Date().toISOString().slice(0,10);
+    var ticker = document.getElementById("logTicker").value.trim();
+    var units = parseFloat(document.getElementById("logUnits").value) || 0;
+    var price = parseFloat(document.getElementById("logPrice").value) || 0;
+    var note = document.getElementById("logNote").value.trim();
+    if (!ticker || !units) { return; }
+    var entry = { id: uid(), date: date, ticker: ticker, units: units, note: note };
+    if (price) entry.price = price;
+    getActive().history.push(entry);
+    save();
+    document.getElementById("logTicker").value = "";
+    document.getElementById("logUnits").value = "";
+    document.getElementById("logPrice").value = "";
+    document.getElementById("logNote").value = "";
+    render();
+  });
+
+  var downloadsCap = null;
+  var downloadsCapPromise = (window.claude && window.claude.use)
+    ? window.claude.use("downloads").then(function(cap){ downloadsCap = cap; return cap; }).catch(function(){ return null; })
+    : Promise.resolve(null);
+
+  document.getElementById("exportJson").addEventListener("click", function(){
+    var payload = JSON.stringify(state, null, 2);
+    var filename = "portfolio-console-" + new Date().toISOString().slice(0,10) + ".json";
+    downloadsCapPromise.then(function(cap){
+      if (cap) {
+        cap.save({ filename: filename, data: payload }).catch(function(err){
+          if (err && err.code === "declined") return;
+          fallbackDownload(filename, payload);
+        });
+      } else {
+        fallbackDownload(filename, payload);
+      }
+    });
+  });
+
+  function fallbackDownload(filename, payload){
+    try {
+      var blob = new Blob([payload], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    } catch (e) {
+      window.alert("Couldn't save the file automatically. Copy this JSON manually:\n\n" + payload.slice(0, 500) + (payload.length > 500 ? "…" : ""));
+    }
+  }
+
+  document.getElementById("importJson").addEventListener("click", function(){
+    document.getElementById("importFile").click();
+  });
+  document.getElementById("importFile").addEventListener("change", function(e){
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      var parsed;
+      try {
+        parsed = JSON.parse(reader.result);
+      } catch (err) {
+        window.alert("That file isn't valid JSON.");
+        e.target.value = "";
+        return;
+      }
+      var looksValid = parsed && (Array.isArray(parsed.holdings) || (parsed.portfolios && typeof parsed.portfolios === "object"));
+      if (!looksValid) {
+        window.alert("That file doesn't look like a Portfolio Console export.");
+        e.target.value = "";
+        return;
+      }
+      if (!window.confirm("Replace all current portfolios, settings, and contribution logs with the contents of this file?")) {
+        e.target.value = "";
+        return;
+      }
+      state = normalize(parsed);
+      save();
+      render();
+      e.target.value = "";
+    };
+    reader.onerror = function(){
+      window.alert("Couldn't read that file.");
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  // ---------- live prices (via this app's own backend) ----------
+  // The page and /api/quote are served from the same place (backend.js),
+  // so this is a same-origin fetch — no CORS proxy needed. Only reaches the
+  // network when backend.js is actually running and serving this page;
+  // opening the HTML file directly (or Claude's own artifact preview) will
+  // show a network error instead, by design.
+  function sleep(ms){ return new Promise(function(resolve){ setTimeout(resolve, ms); }); }
+
+  function fetchWithTimeout(url, ms){
+    var controller = new AbortController();
+    var timer = setTimeout(function(){ controller.abort(); }, ms);
+    return fetch(url, { signal: controller.signal }).finally(function(){ clearTimeout(timer); });
+  }
+
+  async function fetchQuote(symbol){
+    var url = "/api/quote?symbol=" + encodeURIComponent(symbol);
+    console.log("[portfolio-console] requesting", url);
+    var res;
+    try {
+      res = await fetchWithTimeout(url, 10000);
+    } catch (e) {
+      var reachErr = (e && e.name === "AbortError")
+        ? new Error("Request to " + url + " timed out — is backend.js running?")
+        : new Error("Couldn't reach " + url + " at all — is backend.js running, and are you viewing this page at its http://localhost address (not opening the HTML file directly)?");
+      console.error("[portfolio-console] fetch failed:", reachErr.message, e);
+      throw reachErr;
+    }
+    console.log("[portfolio-console] response for", symbol, "-> HTTP", res.status);
+    if (!res.ok) {
+      throw new Error("backend.js returned HTTP " + res.status + " for \"" + symbol + "\" — check the backend.js terminal log.");
+    }
+    var data;
+    try {
+      data = await res.json();
+    } catch (e) {
+      console.error("[portfolio-console] response for", symbol, "wasn't valid JSON", e);
+      throw new Error("Got a response for \"" + symbol + "\" that wasn't valid JSON — check the backend.js terminal log.");
+    }
+    console.log("[portfolio-console] parsed data for", symbol, data);
+    if (data.error) throw new Error(data.error);
+    if (typeof data.price !== "number" || !isFinite(data.price)) {
+      throw new Error("Response for \"" + symbol + "\" had no usable price.");
+    }
+    return { price: data.price, currency: data.currency || "USD", name: data.name || null };
+  }
+
+  function setPriceStatus(text, cls){
+    var el = document.getElementById("priceStatus");
+    el.textContent = text;
+    el.className = "price-status" + (cls ? " " + cls : "");
+  }
+
+  async function refreshPrices(){
+    var p = getActive();
+    var holdingsToFetch = p.holdings.filter(function(h){ return (h.querySymbol || "").trim(); });
+    if (!holdingsToFetch.length) {
+      setPriceStatus("No holdings have a Query symbol set — add one to enable live prices for that row.");
+      return;
+    }
+    console.log("[portfolio-console] refreshPrices: fetching", holdingsToFetch.length, "symbol(s)");
+    setPriceStatus("Fetching live prices…");
+    var okCount = 0, failCount = 0, missingNameCount = 0;
+    var today = new Date().toISOString().slice(0,10);
+    var targetCcy = (p.baseCurrency || "USD").trim().toUpperCase();
+    var fxCache = {}; // currency -> targetCcy rate, or null if it couldn't be fetched
+    for (var i = 0; i < holdingsToFetch.length; i++) {
+      var h = holdingsToFetch[i];
+      var sym = h.querySymbol.trim();
+      if (sym.indexOf(":") !== -1) {
+        h.priceError = "\"" + sym + "\" looks like the old TICKER:EXCHANGE format — Yahoo uses suffixes instead (e.g. SWRD.L, 0P0001OO2D.SI). Update Query symbol.";
+        h.priceNote = null;
+        failCount++;
+        save(); render();
+        continue;
+      }
+      try {
+        var quote = await fetchQuote(sym);
+        if (quote.name) {
+          h.name = quote.name;
+        } else {
+          missingNameCount++;
+          console.warn("[portfolio-console] no name returned for", sym);
+        }
+        var currency = quote.currency;
+        var isPence = currency === "GBp";
+        var fxCcy = isPence ? "GBP" : currency;
+        var basePrice = isPence ? quote.price / 100 : quote.price;
+        if (fxCcy === targetCcy) {
+          // Already in this portfolio's reporting currency — no FX
+          // conversion needed, so the native price is used as-is.
+          h.price = round4(basePrice);
+          h.priceError = null;
+          h.priceNote = null;
+        } else {
+          var fxKey = fxCcy + "->" + targetCcy;
+          if (!(fxKey in fxCache)) {
+            try {
+              var fxQuote = await fetchQuote(fxCcy + targetCcy + "=X");
+              fxCache[fxKey] = fxQuote.price;
+            } catch (fxErr) {
+              console.error("[portfolio-console] FX lookup failed for", fxKey, fxErr);
+              fxCache[fxKey] = null;
+            }
+          }
+          var rate = fxCache[fxKey];
+          if (rate) {
+            h.price = round4(basePrice * rate);
+            h.priceError = null;
+            h.priceNote = "Converted from " + currency + " at " + rate.toFixed(4) + " " + targetCcy + "/" + fxCcy + " — worth double-checking.";
+          } else {
+            h.price = round4(basePrice);
+            h.priceError = "Reported in " + currency + " — couldn't fetch a rate to " + targetCcy + ", so this value is NOT converted.";
+            h.priceNote = null;
+          }
+        }
+        h.pricedAt = today;
+        okCount++;
+      } catch (err) {
+        console.error("[portfolio-console] failed to fetch", sym, err);
+        h.priceError = (err && err.message) ? err.message : ("Couldn't fetch \"" + sym + "\".");
+        h.priceNote = null;
+        failCount++;
+      }
+      save();
+      render();
+    }
+    var skipped = p.holdings.length - holdingsToFetch.length;
+    var skippedNote = skipped ? (" (" + skipped + " skipped, no Query symbol)") : "";
+    var nameNote = missingNameCount ? (" — " + missingNameCount + " symbol(s) had no name returned") : "";
+    if (failCount === 0) {
+      setPriceStatus("Live prices updated " + new Date().toLocaleTimeString() + skippedNote + nameNote + ".", missingNameCount ? "warn" : "ok");
+    } else {
+      setPriceStatus(okCount + " updated, " + failCount + " failed" + skippedNote + " — see highlighted price fields.", "warn");
+    }
+  }
+
+  document.getElementById("refreshPrices").addEventListener("click", refreshPrices);
+
+  // ---------- base weights (via this app's own backend) ----------
+  function setWeightsStatus(text, cls){
+    var el = document.getElementById("weightsStatus");
+    el.textContent = text;
+    el.className = "price-status" + (cls ? " " + cls : "");
+  }
+
+  function round2(n){ return Math.round((Number(n) || 0) * 100) / 100; }
+  function round4(n){ return Math.round((Number(n) || 0) * 10000) / 10000; }
+
+  async function refreshBaseWeights(){
+    var p = getActive();
+    var isSimple = p.weightMode === "simple";
+    setWeightsStatus("Fetching " + (isSimple ? "2-fund" : "3-fund") + " base weights from marketcaps.site…");
+    console.log("[portfolio-console] requesting /api/base-weights");
+    try {
+      var res;
+      try {
+        res = await fetchWithTimeout("/api/base-weights", 10000);
+      } catch (e) {
+        throw new Error("Couldn't reach /api/base-weights at all — is backend.js running, and are you viewing this page at its http://localhost address?");
+      }
+      console.log("[portfolio-console] /api/base-weights -> HTTP", res.status);
+      if (!res.ok) throw new Error("backend.js returned HTTP " + res.status + " for /api/base-weights — check the backend.js terminal log.");
+      var data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        throw new Error("Got a response from /api/base-weights that wasn't valid JSON — check the backend.js terminal log.");
+      }
+      console.log("[portfolio-console] /api/base-weights data", data);
+      if (data.error) throw new Error(data.error);
+      var picked = isSimple ? data.twoFund : data.threeFund;
+      if (!picked || typeof picked.developed !== "number" || typeof picked.em !== "number") {
+        throw new Error("Response from /api/base-weights was missing expected numbers.");
+      }
+      p.baseWeights.developed = round2(picked.developed);
+      p.baseWeights.em = round2(picked.em);
+      p.baseWeights.scv = isSimple ? 0 : round2(picked.scv);
+      if (isSimple) p.satellite = 0;
+      save();
+      render();
+      var summary = "Developed " + fmtPct(p.baseWeights.developed/100, 1) + " / EM " + fmtPct(p.baseWeights.em/100, 1);
+      if (!isSimple) summary += " / Small-cap " + fmtPct(p.baseWeights.scv/100, 1);
+      setWeightsStatus((isSimple ? "2-fund" : "3-fund") + " base weights refreshed as of " + (data.asOf || "unknown date") + " — " + summary + ".", "ok");
+    } catch (err) {
+      console.error("[portfolio-console] refreshBaseWeights failed:", err);
+      setWeightsStatus((err && err.message) ? err.message : "Couldn't fetch base weights.", "warn");
+    }
+  }
+
+  document.getElementById("refreshWeights").addEventListener("click", refreshBaseWeights);
+
+  function setFxStatus(text, cls){
+    var el = document.getElementById("fxStatus");
+    el.textContent = text;
+    el.className = "price-status" + (cls ? " " + cls : "");
+  }
+
+  async function refreshFxRate(){
+    var p = getActive();
+    var base = (p.baseCurrency || "USD").trim().toUpperCase();
+    var target = (p.fxTarget || "").trim().toUpperCase();
+    if (!target) {
+      setFxStatus("Enter a currency to convert to (e.g. SGD) first.", "warn");
+      return;
+    }
+    if (base === target) {
+      p.fxRate = 1;
+      save(); render();
+      setFxStatus(base + " → " + target + " is 1:1.", "ok");
+      return;
+    }
+    setFxStatus("Fetching " + base + " → " + target + "…");
+    try {
+      var quote = await fetchQuote(base + target + "=X");
+      p.fxRate = quote.price;
+      save();
+      render();
+      setFxStatus(base + " → " + target + " updated to " + quote.price.toFixed(4) + " as of " + new Date().toLocaleTimeString() + ".", "ok");
+    } catch (err) {
+      setFxStatus((err && err.message) ? err.message : "Couldn't fetch the FX rate. Is backend.js running, and are you viewing the page at its http://localhost address?", "warn");
+    }
+  }
+
+  document.getElementById("refreshFx").addEventListener("click", refreshFxRate);
+
+  document.getElementById("themeToggle").addEventListener("click", function(){
+    var root = document.documentElement;
+    var current = root.getAttribute("data-theme");
+    var next = current === "dark" ? "light" : (current === "light" ? null : "dark");
+    if (next) { root.setAttribute("data-theme", next); } else { root.removeAttribute("data-theme"); }
+    state.theme = next || "auto";
+    save();
+  });
+
+  // Called on initial page load and on every tab switch, so whichever
+  // portfolio you're looking at always shows current prices and current
+  // market weightage without a manual click. Fire-and-forget: doesn't
+  // block rendering, and each function reports its own status/errors.
+  function autoRefreshActiveTab(){
+    refreshBaseWeights();
+    if (getActive().holdings.some(function(h){ return (h.querySymbol || "").trim(); })) {
+      refreshPrices();
+    }
+  }
+
+  // init
+  if (state.theme === "dark" || state.theme === "light") {
+    document.documentElement.setAttribute("data-theme", state.theme);
+  }
+  document.getElementById("logDate").value = new Date().toISOString().slice(0,10);
+  render();
+
+  // First run in this browser (nothing in localStorage yet): try to
+  // bootstrap from a local seed-data.json via the backend, instead of
+  // sitting on the generic empty built-in defaults. Only runs once, since
+  // any saved state at all (even one edit) means this never fires again —
+  // seed-data.json seeds a fresh install, it never overwrites real edits.
+  function bootstrapFromSeedFile(){
+    console.log("[portfolio-console] no saved state yet — checking for local seed-data.json");
+    fetchWithTimeout("/api/seed-data", 5000)
+      .then(function(res){
+        if (!res.ok) {
+          console.log("[portfolio-console] no seed-data.json (HTTP " + res.status + ") — staying on built-in defaults");
+          return null;
+        }
+        return res.json();
+      })
+      .then(function(seed){
+        if (!seed) return;
+        console.log("[portfolio-console] loaded seed-data.json, applying it", seed);
+        state = normalize(seed);
+        save();
+        render();
+        autoRefreshActiveTab();
+      })
+      .catch(function(e){
+        console.log("[portfolio-console] couldn't check for seed-data.json (this is fine if you're not using one):", e && e.message);
+      });
+  }
+
+  // Fire after the first paint so a slow/blocked network request never
+  // delays the page from showing up with whatever data is cached.
+  setTimeout(function(){
+    if (usedBuiltInDefaults) {
+      bootstrapFromSeedFile();
+    } else {
+      autoRefreshActiveTab();
+    }
+  }, 50);
+})();
+</script>
+</body>
+</html>

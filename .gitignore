@@ -1,0 +1,3 @@
+# Personal portfolio data — bootstraps a fresh install via /api/seed-data
+# (see backend.js), never meant to be committed.
+seed-data.json
