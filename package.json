@@ -1,0 +1,14 @@
+{
+  "name": "portfolio-console",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Goal-based multi-portfolio rebalance tracker with live prices (Yahoo Finance) and live market weightings (marketcaps.site) — no API keys, no dependencies.",
+  "main": "backend.js",
+  "scripts": {
+    "start": "node backend.js",
+    "dev": "node backend.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

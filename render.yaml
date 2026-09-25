@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: portfolio-console
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      # Optional — set both to lock the deployed instance behind HTTP Basic
+      # Auth. Recommended if this service is reachable from the public
+      # internet, since without it anyone with the URL can use it as an
+      # anonymous Yahoo Finance proxy. Leave unset for local-only use.
+      - key: BASIC_AUTH_USER
+        sync: false
+      - key: BASIC_AUTH_PASS
+        sync: false

@@ -38,8 +38,19 @@
  * portfolio-console.html in the same folder. Leave the terminal open while
  * using the app; Ctrl+C to stop.
  *
- * Binds to 127.0.0.1 only — not reachable from other devices on your
- * network, just this machine.
+ * Host binding: binds to 127.0.0.1 (localhost-only) by default — not
+ * reachable from other devices, just this machine. On Render (or anywhere
+ * that sets a RENDER env var, which Render does automatically), it instead
+ * binds to 0.0.0.0 so the platform's router can reach it. Override with
+ * HOST=0.0.0.0 (or any address) if you need that locally too, e.g. to test
+ * from your phone on the same network.
+ *
+ * Optional access control: if BASIC_AUTH_USER and BASIC_AUTH_PASS are both
+ * set, every request (page and APIs) requires HTTP Basic Auth with those
+ * credentials. Off by default — fine for local use, but worth turning on
+ * for any deployment reachable from the public internet, since without it
+ * anyone with the URL can use this as an anonymous Yahoo Finance proxy, and
+ * can read seed-data.json's contents via /api/seed-data if one is present.
  *
  * Git workflow: portfolio-console.html ships with empty/generic default
  * portfolios (no personal holdings). To keep your real numbers out of the
@@ -49,6 +60,8 @@
  * bootstrap from it automatically on first load; once there's any saved
  * state at all, it's never touched again — editing in the app going
  * forward, and re-exporting over seed-data.json, is a separate, manual step.
+ * To get a seed-data.json onto a Render deploy without committing it,
+ * use Render's "Secret Files" (service's Environment page) rather than git.
  *
  * Every request and upstream response is logged to this terminal (path
  * queried, the exact Yahoo/marketcaps.site URL called, the status code
@@ -63,6 +76,9 @@ const fs = require("fs");
 const path = require("path");
 
 const PORT = process.env.PORT || 8787;
+const HOST = process.env.HOST || (process.env.RENDER ? "0.0.0.0" : "127.0.0.1");
+const AUTH_USER = process.env.BASIC_AUTH_USER || "";
+const AUTH_PASS = process.env.BASIC_AUTH_PASS || "";
 const HTML_PATH = path.join(__dirname, "portfolio-console.html");
 const SEED_PATH = path.join(__dirname, "seed-data.json");
 const YAHOO_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
@@ -89,6 +105,26 @@ function log(){
 function truncate(str, n){
   str = String(str);
   return str.length > n ? str.slice(0, n) + "…(truncated)" : str;
+}
+
+// Optional HTTP Basic Auth, gated on BASIC_AUTH_USER/BASIC_AUTH_PASS both
+// being set. Constant-time-ish comparison isn't attempted here — this is a
+// lightweight deterrent for a personal tool, not a security boundary for
+// anything sensitive. Use a real auth layer in front if that's needed.
+function isAuthed(req){
+  if (!AUTH_USER && !AUTH_PASS) return true;
+  var header = req.headers["authorization"] || "";
+  if (!header.startsWith("Basic ")) return false;
+  var decoded;
+  try {
+    decoded = Buffer.from(header.slice(6), "base64").toString("utf8");
+  } catch (e) {
+    return false;
+  }
+  var idx = decoded.indexOf(":");
+  var user = idx === -1 ? decoded : decoded.slice(0, idx);
+  var pass = idx === -1 ? "" : decoded.slice(idx + 1);
+  return user === AUTH_USER && pass === AUTH_PASS;
 }
 
 // ---------- /api/quote ----------
@@ -283,6 +319,15 @@ const server = http.createServer(function (req, res) {
   const reqUrl = new URL(req.url, "http://localhost:" + PORT);
   log("REQUEST", req.method, req.url);
 
+  if (!isAuthed(req)) {
+    log("REJECTED: failed Basic Auth");
+    res.writeHead(401, {
+      "WWW-Authenticate": 'Basic realm="Portfolio Console"',
+      "Content-Type": "text/plain",
+    });
+    return res.end("Authentication required.");
+  }
+
   if (req.method !== "GET") {
     log("REJECTED: not GET");
     return sendText(res, 405, "Only GET is supported.");
@@ -304,7 +349,14 @@ const server = http.createServer(function (req, res) {
   return sendText(res, 404, "Not found.");
 });
 
-server.listen(PORT, "127.0.0.1", function () {
-  console.log("Portfolio Console running at http://localhost:" + PORT + "/");
+server.listen(PORT, HOST, function () {
+  var displayHost = HOST === "0.0.0.0" ? "localhost" : HOST;
+  console.log("Portfolio Console running at http://" + displayHost + ":" + PORT + "/");
+  if (HOST === "0.0.0.0") {
+    console.log("Bound to 0.0.0.0 — reachable from outside this machine.");
+    if (!AUTH_USER || !AUTH_PASS) {
+      console.log("WARNING: no BASIC_AUTH_USER/BASIC_AUTH_PASS set — this instance has no access control.");
+    }
+  }
   console.log("Press Ctrl+C to stop.");
 });
