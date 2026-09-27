@@ -663,7 +663,7 @@
           </div>
           <p class="price-status" id="fxStatus" style="margin-top:8px;"></p>
           <div class="settings-foot">
-            Specific to this portfolio — a 3-fund account like the brokerage runs a small-cap-value satellite tilt; a 2-fund account like CPF just uses a plain Developed/EM market-cap split. "Refresh base weights" pulls the matching weighting from <a href="https://www.marketcaps.site/" target="_blank" rel="noopener">marketcaps.site</a>'s own CSV export via this app's backend — same math the site itself uses, computed here from the raw market caps rather than scraped off the page. FX rate is currently display-only (not applied to the total); "Refresh" fetches it live from Yahoo via the backend, same as holding prices. Live prices for holdings are served the same way — via this app's own local backend (<code>backend.js</code>), same-origin, no CORS proxy needed — and only work while it's running and you're viewing the page at its <code>http://localhost</code> address.
+            Specific to this portfolio — a 3-fund account like the brokerage runs a small-cap-value satellite tilt; a 2-fund account like CPF just uses a plain Developed/EM market-cap split. "Refresh base weights" pulls the matching weighting from <a href="https://www.marketcaps.site/" target="_blank" rel="noopener">marketcaps.site</a>'s own CSV export via this app's backend — same math the site itself uses, computed here from the raw market caps rather than scraped off the page. FX rate is currently display-only (not applied to the total); "Refresh" fetches it live from Yahoo via the backend, same as holding prices. Live prices for holdings are served the same way — via this app's own local backend (<code>server.js</code>), same-origin, no CORS proxy needed — and only work while it's running and you're viewing the page at its <code>http://localhost</code> address.
           </div>
         </details>
       </div>
@@ -710,9 +710,8 @@
 
   var STORAGE_KEY = "portfolio-console-state-v1";
 
-  // Category set shared across every portfolio's rebalance ribbon/legend/
-  // table/dropdown. shortLabel is used only in the compact bucket dropdown;
-  // label is used everywhere else (legend, chips, recommendation card).
+  // Shared across every portfolio's ribbon/legend/table/dropdown.
+  // shortLabel is used only in the compact bucket dropdown.
   var CATS = {
     developed: { label: "Developed World", shortLabel: "DM", cls: "developed" },
     em: { label: "Emerging Markets", shortLabel: "EM", cls: "em" },
@@ -722,18 +721,11 @@
 
   function uid(){ return Math.random().toString(36).slice(2, 10); }
 
-  // Each portfolio is its own goal-based account with its own holdings,
-  // weightage settings, hideOther flag and contribution log. weightMode
-  // decides which shape its Market Weightage panel and target formula use:
-  // "tilt" = 3-fund base weights (Developed/EM/SCV) + a satellite tilt on
-  // SCV, like the brokerage's small-cap-value strategy. "simple" = 2-fund
-  // base weights (Developed/EM only), no small-cap component, no tilt —
-  // for an account like CPF that just wants a plain market-cap split.
-  // These committed defaults are intentionally generic (no personal
-  // holdings) — real holdings are meant to come from a local seed-data.json
-  // (see /api/seed-data below), which you gitignore so it never gets
-  // committed. Structure/strategy defaults (weightMode, base weights,
-  // currency) stay here since they're not personal, just a starting point.
+  // Each portfolio is its own goal-based account. weightMode picks its
+  // target formula: "tilt" = 3-fund base weights (Developed/EM/SCV) plus
+  // a satellite tilt on SCV; "simple" = 2-fund (Developed/EM only), no
+  // tilt. Holdings are intentionally empty here — real data is meant to
+  // come from data/seed-data.json (gitignored; see /api/seed-data).
   function defaultBrokeragePortfolio(){
     return {
       label: "Accumulation Portfolio (IBKR)",
@@ -802,8 +794,7 @@
     p.holdings.forEach(function(h){
       if (!h.id) h.id = uid();
       if (!CATS[h.category]) h.category = "other";
-      // Migrate older value-only holdings: units=1 at the old value keeps
-      // the total and ratio identical until the user fills in real units.
+      // Legacy value-only holdings: units=1 at the old value preserves totals.
       if (h.units === undefined || h.price === undefined) {
         var oldValue = Number(h.value) || 0;
         h.units = h.units === undefined ? 1 : h.units;
@@ -815,9 +806,7 @@
       if (h.querySymbol === undefined) h.querySymbol = "";
       if (h.priceError === undefined) h.priceError = null;
       if (h.priceNote === undefined) h.priceNote = null;
-      // Migrate old ticker-only holdings: the ticker becomes the initial
-      // display Name, since it's the only label we had before.
-      if (h.name === undefined) h.name = h.ticker || "";
+      if (h.name === undefined) h.name = h.ticker || ""; // legacy ticker -> Name
       delete h.value;
       delete h.currency;
       delete h.ticker;
@@ -825,8 +814,7 @@
     p.history.forEach(function(entry){
       if (!entry.id) entry.id = uid();
       if (entry.units === undefined) {
-        // Migrate older dollar-amount entries: keep the amount visible as
-        // a single "unit" priced at that amount, so nothing is lost.
+        // Legacy dollar-amount entries -> a single unit priced at that amount.
         entry.units = 1;
         entry.price = Number(entry.amount) || 0;
       }
@@ -841,10 +829,8 @@
     if (parsed && parsed.portfolios && typeof parsed.portfolios === "object") {
       var keys = Object.keys(parsed.portfolios);
       if (!keys.length) return defaultState();
-      // Market weightage briefly lived at the top level (shared across
-      // portfolios); it's back to per-portfolio now, so push it back down
-      // into whichever portfolio doesn't already have its own copy —
-      // brokerage keeps the tilt weights, everything else starts fresh.
+      // Legacy: weightage once lived at the top level (shared). Push it
+      // back down into brokerage; other portfolios start fresh.
       if (parsed.baseWeights || parsed.satellite !== undefined || parsed.baseCurrency || parsed.fxRate !== undefined || parsed.fxTarget) {
         var brokerageKey = parsed.portfolios.brokerage ? "brokerage" : keys[0];
         keys.forEach(function(k){
@@ -864,9 +850,7 @@
         delete parsed.fxTarget;
       }
       keys.forEach(function(k){ parsed.portfolios[k] = normalizePortfolio(parsed.portfolios[k]); });
-      // Newly-added portfolio types get seeded in for everyone, not just
-      // fresh installs, so existing users see them without losing data.
-      if (!parsed.portfolios.cpf) parsed.portfolios.cpf = defaultCpfPortfolio();
+      if (!parsed.portfolios.cpf) parsed.portfolios.cpf = defaultCpfPortfolio(); // new portfolio type, added retroactively
       if (!parsed.activeTab || !parsed.portfolios[parsed.activeTab]) parsed.activeTab = keys[0];
       if (!parsed.theme) parsed.theme = "light";
       return parsed;
@@ -994,9 +978,7 @@
       : "SCV tilt +" + fmtPct(p.satellite/100, 1);
     document.getElementById("ledgerNote").textContent = p.sourceHint || "";
 
-    // simple (2-fund) portfolios don't have a small-cap-value slice at all —
-    // drop it from the ribbon, legend, chips and recommendation entirely
-    // rather than showing a permanent, meaningless 0%/0% row.
+    // 2-fund portfolios have no small-cap slice — drop it everywhere below.
     var cats = p.weightMode === "simple" ? ["developed","em"] : ["developed","em","scv"];
     document.getElementById("ribbonNote").textContent = p.weightMode === "simple"
       ? "Developed / Emerging Markets, excluding individual stock positions."
@@ -1082,9 +1064,7 @@
     document.getElementById("satVal").textContent = Number(p.satellite).toFixed(1) + "%";
     document.getElementById("hideOther").checked = !!p.hideOther;
 
-    // "simple" (2-fund) portfolios like CPF don't have a small-cap slice or
-    // a tilt to apply, so those controls are irrelevant — hide them rather
-    // than show inputs that do nothing.
+    // Hide SCV/tilt controls for 2-fund portfolios — they don't apply.
     var isSimple = p.weightMode === "simple";
     document.getElementById("scvWeightField").style.display = isSimple ? "none" : "";
     document.getElementById("satelliteRow").style.display = isSimple ? "none" : "";
@@ -1429,11 +1409,7 @@
   });
 
   // ---------- live prices (via this app's own backend) ----------
-  // The page and /api/quote are served from the same place (backend.js),
-  // so this is a same-origin fetch — no CORS proxy needed. Only reaches the
-  // network when backend.js is actually running and serving this page;
-  // opening the HTML file directly (or Claude's own artifact preview) will
-  // show a network error instead, by design.
+  // Same-origin fetch to server.js — only works when it's actually running.
   function sleep(ms){ return new Promise(function(resolve){ setTimeout(resolve, ms); }); }
 
   function fetchWithTimeout(url, ms){
@@ -1450,21 +1426,21 @@
       res = await fetchWithTimeout(url, 10000);
     } catch (e) {
       var reachErr = (e && e.name === "AbortError")
-        ? new Error("Request to " + url + " timed out — is backend.js running?")
-        : new Error("Couldn't reach " + url + " at all — is backend.js running, and are you viewing this page at its http://localhost address (not opening the HTML file directly)?");
+        ? new Error("Request to " + url + " timed out — is server.js running?")
+        : new Error("Couldn't reach " + url + " at all — is server.js running, and are you viewing this page at its http://localhost address (not opening the HTML file directly)?");
       console.error("[portfolio-console] fetch failed:", reachErr.message, e);
       throw reachErr;
     }
     console.log("[portfolio-console] response for", symbol, "-> HTTP", res.status);
     if (!res.ok) {
-      throw new Error("backend.js returned HTTP " + res.status + " for \"" + symbol + "\" — check the backend.js terminal log.");
+      throw new Error("server.js returned HTTP " + res.status + " for \"" + symbol + "\" — check the server.js terminal log.");
     }
     var data;
     try {
       data = await res.json();
     } catch (e) {
       console.error("[portfolio-console] response for", symbol, "wasn't valid JSON", e);
-      throw new Error("Got a response for \"" + symbol + "\" that wasn't valid JSON — check the backend.js terminal log.");
+      throw new Error("Got a response for \"" + symbol + "\" that wasn't valid JSON — check the server.js terminal log.");
     }
     console.log("[portfolio-console] parsed data for", symbol, data);
     if (data.error) throw new Error(data.error);
@@ -1516,8 +1492,7 @@
         var fxCcy = isPence ? "GBP" : currency;
         var basePrice = isPence ? quote.price / 100 : quote.price;
         if (fxCcy === targetCcy) {
-          // Already in this portfolio's reporting currency — no FX
-          // conversion needed, so the native price is used as-is.
+          // Already in the portfolio's reporting currency — no conversion needed.
           h.price = round4(basePrice);
           h.priceError = null;
           h.priceNote = null;
@@ -1586,15 +1561,15 @@
       try {
         res = await fetchWithTimeout("/api/base-weights", 10000);
       } catch (e) {
-        throw new Error("Couldn't reach /api/base-weights at all — is backend.js running, and are you viewing this page at its http://localhost address?");
+        throw new Error("Couldn't reach /api/base-weights at all — is server.js running, and are you viewing this page at its http://localhost address?");
       }
       console.log("[portfolio-console] /api/base-weights -> HTTP", res.status);
-      if (!res.ok) throw new Error("backend.js returned HTTP " + res.status + " for /api/base-weights — check the backend.js terminal log.");
+      if (!res.ok) throw new Error("server.js returned HTTP " + res.status + " for /api/base-weights — check the server.js terminal log.");
       var data;
       try {
         data = await res.json();
       } catch (e) {
-        throw new Error("Got a response from /api/base-weights that wasn't valid JSON — check the backend.js terminal log.");
+        throw new Error("Got a response from /api/base-weights that wasn't valid JSON — check the server.js terminal log.");
       }
       console.log("[portfolio-console] /api/base-weights data", data);
       if (data.error) throw new Error(data.error);
@@ -1647,7 +1622,7 @@
       render();
       setFxStatus(base + " → " + target + " updated to " + quote.price.toFixed(4) + " as of " + new Date().toLocaleTimeString() + ".", "ok");
     } catch (err) {
-      setFxStatus((err && err.message) ? err.message : "Couldn't fetch the FX rate. Is backend.js running, and are you viewing the page at its http://localhost address?", "warn");
+      setFxStatus((err && err.message) ? err.message : "Couldn't fetch the FX rate. Is server.js running, and are you viewing the page at its http://localhost address?", "warn");
     }
   }
 
@@ -1662,10 +1637,7 @@
     save();
   });
 
-  // Called on initial page load and on every tab switch, so whichever
-  // portfolio you're looking at always shows current prices and current
-  // market weightage without a manual click. Fire-and-forget: doesn't
-  // block rendering, and each function reports its own status/errors.
+  // Runs on load and on every tab switch; fire-and-forget, non-blocking.
   function autoRefreshActiveTab(){
     refreshBaseWeights();
     if (getActive().holdings.some(function(h){ return (h.querySymbol || "").trim(); })) {
@@ -1680,11 +1652,8 @@
   document.getElementById("logDate").value = new Date().toISOString().slice(0,10);
   render();
 
-  // First run in this browser (nothing in localStorage yet): try to
-  // bootstrap from a local seed-data.json via the backend, instead of
-  // sitting on the generic empty built-in defaults. Only runs once, since
-  // any saved state at all (even one edit) means this never fires again —
-  // seed-data.json seeds a fresh install, it never overwrites real edits.
+  // First run only (no localStorage yet) — bootstrap from seed-data.json
+  // via the backend if present. Never runs again once any state is saved.
   function bootstrapFromSeedFile(){
     console.log("[portfolio-console] no saved state yet — checking for local seed-data.json");
     fetchWithTimeout("/api/seed-data", 5000)

@@ -1,0 +1,91 @@
+{
+  "theme": "light",
+  "activeTab": "brokerage",
+  "portfolios": {
+    "brokerage": {
+      "label": "Accumulation Portfolio (IBKR)",
+      "description": "Market-cap core (Developed + EM) plus a small-cap-value satellite tilt.",
+      "sourceHint": "Enter unit counts and a price per unit (USD) for each holding from Interactive Brokers.",
+      "weightMode": "tilt",
+      "baseWeights": { "developed": 79.8, "em": 10.7, "scv": 9.4 },
+      "satellite": 12,
+      "baseCurrency": "USD",
+      "fxRate": 1.2667,
+      "fxTarget": "SGD",
+      "hideOther": false,
+      "holdings": [
+        {
+          "id": "example-ibkr-1",
+          "querySymbol": "SWRD.L",
+          "name": "State Street SPDR MSCI World UCITS ETF",
+          "category": "developed",
+          "units": 1,
+          "price": 53.8,
+          "pricedAt": "2026-09-24",
+          "priceError": null,
+          "priceNote": null
+        },
+        {
+          "id": "example-ibkr-2",
+          "querySymbol": "EIMI.L",
+          "name": "iShares Core MSCI EM IMI UCITS ETF USD (Acc)",
+          "category": "em",
+          "units": 1,
+          "price": 55.66,
+          "pricedAt": "2026-09-24",
+          "priceError": null,
+          "priceNote": null
+        },
+                {
+          "id": "example-ibkr-3",
+          "querySymbol": "AVGS",
+          "name": "Avantis Global Small Cap Value UCITS ETF USD Acc",
+          "category": "scv",
+          "units": 1,
+          "price": 28.42,
+          "pricedAt": "2026-09-24",
+          "priceError": null,
+          "priceNote": null
+        }
+      ],
+      "history": []
+    },
+    "cpf": {
+      "label": "CPFIS-OA",
+      "description": "CPF Ordinary Account funds — simple market-cap-weighted Developed + EM split, no small-cap tilt.",
+      "sourceHint": "Enter unit counts for each CPFIS fund; prices refresh from Yahoo the same way as the brokerage account.",
+      "weightMode": "simple",
+      "baseWeights": { "developed": 88.14, "em": 11.86, "scv": 0 },
+      "satellite": 0,
+      "baseCurrency": "SGD",
+      "fxRate": 0.74,
+      "fxTarget": "USD",
+      "hideOther": false,
+      "holdings": [
+        {
+          "id": "example-cpf-1",
+          "querySymbol": "0P0001OO2D.SI",
+          "name": "Amundi Idx MSCI World A12S-C",
+          "category": "developed",
+          "units": 10,
+          "price": 239.89,
+          "pricedAt": "2026-09-24",
+          "priceError": null,
+          "priceNote": null
+        },
+        {
+          "id": "example-cpf-2",
+          "querySymbol": "0P0001OO2F.SI",
+          "name": "Amundi IS Core MSCI Emerg Mkts A12S Acc",
+          "category": "em",
+          "units": 2,
+          "price": 227.07,
+          "pricedAt": "2026-09-24",
+          "priceError": null,
+          "priceNote": null
+        }
+      ],
+      "history": []
+    }
+  }
+}
